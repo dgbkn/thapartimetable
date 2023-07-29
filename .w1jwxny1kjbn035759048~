@@ -1,0 +1,228 @@
+
+<?php 
+   include('session.php');
+   $page_title = 'Calculate ffa';
+?>
+<?php include('header.php') ?>
+
+<?php include('conn.php') ?>
+
+<style>
+table, th, td {
+  border: 1px solid black;
+  padding:4px;
+  color: black;
+}
+</style>
+
+
+<div class="row">
+<section class="container grey-text col s6">
+
+
+	<form class="white"style="padding: 20px;margin: 10px;max-width: 500px;margin-bottom:40px;" action="" method="POST">
+	    
+
+ <label>FFA :-</label>
+<input type="number" name="ffa" id="ffa" step="any" onchange="calculate()" oninput="calculate()">
+
+
+<label>Weight :-</label>
+<input type="number" name="weight" id="weight"  step="any" onchange="calculate()" oninput="calculate()">
+
+
+<label>Rate :-</label>
+<input type="number" name="rate" id="rate"  step="any" onchange="calculate()" oninput="calculate()">
+
+
+<!-- <label>GST :-</label>
+<input type="number" name="gst" id="gst" value="5" onchange="calculate()" oninput="calculate()" disabled> -->
+
+<label>Colour :-</label>
+<input type="number" name="color" id="color" step="any" onchange="calculate()" oninput="calculate()">
+
+<br>
+
+<div class="center" id="status">
+
+</div>
+ 
+ 
+	</form>
+
+
+</section>
+<div class="col s6">
+    <BR>
+        <table style="width: 456px; height: 224px;">
+<tbody>
+<tr>
+<td style="width: 118px;">FFA</td>
+<td style="width: 124.6px;">REBATE</td>
+<td style="width: 81.4px;">AMT IN %</td>
+<td style="width: 102px;">CUMMALITIVE</td>
+</tr>
+<tr>
+<td style="width: 118px;">&nbsp;</td>
+<td style="width: 124.6px;">&nbsp;</td>
+<td style="width: 81.4px;">&nbsp;</td>
+<td style="width: 102px;">&nbsp;</td>
+</tr>
+<tr>
+<td style="width: 118px;">0&nbsp; &nbsp; &nbsp; TO 1.50</td>
+<td style="width: 124.6px;">PASS</td>
+<td style="width: 81.4px;">0</td>
+<td style="width: 102px;">0</td>
+</tr>
+<tr>
+<td style="width: 118px;">1.5&nbsp; &nbsp;TO 2</td>
+<td style="width: 124.6px;">Singal rebate</td>
+<td style="width: 81.4px;">0.5</td>
+<td style="width: 102px;">0.5</td>
+</tr>
+<tr>
+<td style="width: 118px;">2&nbsp; &nbsp; &nbsp; TO 2.50</td>
+<td style="width: 124.6px;">triple rebate</td>
+<td style="width: 81.4px;">1.5</td>
+<td style="width: 102px;">2</td>
+</tr>
+<tr>
+<td style="width: 118px;">2.50 TO 3</td>
+<td style="width: 124.6px;">four times</td>
+<td style="width: 81.4px;">2</td>
+<td style="width: 102px;">4</td>
+</tr>
+<tr>
+<td style="width: 118px;">3&nbsp; &nbsp; &nbsp; TO 3.50</td>
+<td style="width: 124.6px;">five times</td>
+<td style="width: 81.4px;">&nbsp;</td>
+<td style="width: 102px;">4+5 times</td>
+</tr>
+<tr>
+<td style="width: 118px;">3.50 TO 4</td>
+<td style="width: 124.6px;">&nbsp;</td>
+<td style="width: 81.4px;">&nbsp;</td>
+<td style="width: 102px;">&nbsp;</td>
+</tr>
+<tr>
+<td style="width: 118px;">4&nbsp; &nbsp; &nbsp; TO 4.5</td>
+<td style="width: 124.6px;">three times&nbsp;</td>
+<td style="width: 81.4px;">&nbsp;</td>
+<td style="width: 102px;">LESS RS. 6</td>
+</tr>
+<tr>
+<td style="width: 118px;">4.5&nbsp; &nbsp;TO&nbsp; 5</td>
+<td style="width: 124.6px;">four times</td>
+<td style="width: 81.4px;">&nbsp;</td>
+<td style="width: 102px;">LESS RS. 6&nbsp;</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+<script>
+function isEmpty(str) {
+    return (!str || 0 === str.length);
+}
+    function returnDoubleofId(id){
+       return isEmpty(document.getElementById(id).value) ? 0:parseFloat(document.getElementById(id).value);
+    }
+    function calculate(){
+        var ffa = returnDoubleofId('ffa');
+        var weight = returnDoubleofId('weight');
+        var rate = returnDoubleofId('rate');
+        var gst = 5.00;
+        var color = returnDoubleofId('color');
+    // console.log(ffa);
+        var rebate;
+        var totalamt;
+        var oldrate = rate; 
+        var bool = false;
+
+            if(ffa < 1.50 || ffa == 1.50){
+                rebate = 0;
+            }else if(ffa > 1.50 && (ffa==2.0 || ffa < 2.0)){
+                rebate = ffa - 1.5;
+            }else if(ffa > 2.0 && (ffa==2.5 || ffa < 2.5)){
+                rebate = (ffa - 2)*3;
+                rebate = rebate + 0.5;
+            }else if(ffa > 2.5 && (ffa==3.0 || ffa < 3.0)){
+                rebate = (ffa - 2.5)*4;
+                rebate = rebate + 2;
+            }else if(ffa > 3.0 && (ffa==3.5 || ffa < 3.5)){
+                rebate = (ffa - 3)*5;
+                rebate = rebate + 4;
+            }else if(ffa > 3.5 && (ffa==4.0 || ffa < 4.0)){
+                rate = rate - 6.00;
+                bool = true;   
+                // rebate = 1; 
+            }else if(ffa > 4.0 && (ffa==4.5 || ffa < 4.5)){
+                rate = rate  - 6; 
+                rebate = (ffa - 4)*3;
+            }else if(ffa > 4.5 && (ffa < 5.0)){
+                rate = rate  - 6; 
+                rebate = (ffa - 4.5)*4;
+                rebate = rebate + 1.5;
+
+            }else if(ffa==5.0 || ffa > 5.0){
+              var base;
+            //   base = parseFloat((ffa.toString())[0]);
+           base = parseInt(ffa);
+              ceilbase = base;
+              var okok = false;
+              var numberofincrement = Math.abs((ceilbase-4.0));
+              if(ffa>=(base+0.5)){
+                  base = base + 0.5;
+                  okok = true;
+              }
+              backbase = base - 0.5;
+              if(backbase == 4.5 || ffa > 5.5){
+                backrebate = (base - backbase)*3;
+                rebate = (ffa - base)*4;
+
+              }else{
+                backrebate = (base - backbase)*3;
+                rebate = (ffa - base)*3;
+
+              }
+              rate = rate - (6+2.5*numberofincrement);
+              console.log(backrebate);
+
+ if(okok){rebate = rebate + backrebate;}
+            //   rebate = rebate + backrebate;
+            
+            //   console.log(base);
+            }
+            
+    // console.log(rebate);
+    var oldbillamt = weight * rate + (weight * rate/20);
+   totalamt = weight * rate;
+   var gstval = totalamt/20;
+   
+   totalamt = totalamt + (totalamt/20);
+   var finalbamtl;
+var percentrebate = rebate;
+if(!bool){
+rebate = percentrebate/100 * totalamt;
+finalbamtl = totalamt - rebate;
+}else{ 
+    finalbamtl = totalamt;
+}
+
+var status ='';
+
+status += '<table border="1" class="highlight okok"><tr><th>Rate</th><th>Rate after Cutting</th><th>GST Amount</th><th>Bill Amount</th><th>Rebate %</th><th>Rebate Amount</th><th>Total Bill Amount</th></tr><tr>';
+status += '<td>'+oldrate+'</td><td>'+rate+'</td><td>'+gstval + '</td><td>'+oldbillamt+'</td>'+'<td>'+percentrebate.toFixed(2)+'</td><td>'+rebate+'</td><td>'+finalbamtl.toFixed(4)+'</td>'+'</tr>';
+
+document.getElementById('status').innerHTML = status;
+          
+}
+</script>
+
+
+
+
+
+<?php include('footer.php'); ?>

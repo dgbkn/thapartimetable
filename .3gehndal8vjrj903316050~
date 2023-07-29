@@ -1,0 +1,308 @@
+<?php include('session.php');$page_title = "Add Invoice" ?>
+
+<?php include('conn.php'); ?>
+
+<?php include('header.php'); ?>
+
+<?php
+if(isset($_GET['tb']) && isset($_GET['pn']))  : ?>
+
+<?php 
+$total_brok = $_GET['tb'];
+
+
+$id =  $_GET['pn'];
+$sql_new = "SELECT `id`,`name`,`addres`,`addres1`,`phone` FROM `ledgers` WHERE `id`=$id ";
+$result_new = mysqli_query($conn, $sql_new);
+$rowis = mysqli_fetch_assoc($result_new);
+$party_name = $rowis['name'];
+
+
+
+$sql_check = "SELECT * from `r_contract` where `seller_party` = '$party_name' or `buyer_party` = '$party_name' and `company` = '$company_current'";
+
+
+if(mysqli_num_rows(mysqli_query($conn,$sql_check)) > 0 ){ ?>
+<?php
+$sql_get_id = "SELECT `id` from `invoice` order by `id` DESC";
+$result_get_id = mysqli_query($conn,$sql_get_id);
+$idid = mysqli_fetch_assoc($result_get_id);
+
+
+
+$id_to_new = $idid['id'] + 1;
+
+$err = ['d' => '','ds'=>'','a'=> '','s'=> ''];
+
+
+if(isset($_POST['submit'])){
+
+    if(empty($_POST['ds1'])){
+        $err['ds'] = "Enter a Description";
+    }else{
+      $des1 = $_POST['ds1'];
+    }
+
+
+    if(empty($_POST['ds2'])){
+        $des2 = '';
+    }else{
+      $des2 = $_POST['ds2'];
+    }
+
+    if(empty($_POST['sr1'])){
+        $err['s'] = "Enter a Sreial Number";
+    }else{
+        $sn1 = $_POST['sr1'];
+    }
+
+    if(empty($_POST['amt1'])){
+      $err['a'] = "enter amount";
+        // $amt1 = 0;
+    }else{
+        $amt1 = $_POST['amt1'];
+    }
+
+    if(empty($_POST['amt2'])){
+        $amt2 = 0;
+    }else{
+        $amt2 = $_POST['amt2'];
+    }
+
+    if(empty($_POST['date'])){
+        $err['d'] = "Enter a Date";
+    }else{
+        $date = $_POST['date'];
+    }
+
+
+    if(empty($_POST['sr2'])){
+       $sn2 = 0;
+    }else{
+        $sn2 = $_POST['sr2'];
+   
+    }
+ //do if submitted
+    $total = $_POST['total_sum'];echo $total;
+
+    if(!array_filter($err)){
+        // echo $total .'<br>'.$date.'<br>'.$amt1.'<br>'.$amt2.'<br>'.$des1.'<br>'.$sn1;
+
+ $sql_i = "INSERT INTO `invoice` (`id`, `party`, `amt1`, `amt2`, `company`, `sn1`, `sn2`, `dis1`, `dis2`,`date`) VALUES (NULL, '$party_name', $amt1, $amt2, '$company_current', $sn1, $sn2, '$des1', '$des2','$date')";
+ $query_i = mysqli_query($conn,$sql_i);
+ if($query_i){ ?>
+
+<script>
+      function createPDF() {
+          
+        
+
+
+       
+        var style = "<style>";
+       style = style + "td.brokerage{text-align:right!important;}pre { font-size: 12px; font-family: sans-serif; }"
+        style = style + "@page { size: auto;  margin-left: 2mm;margin-top: 5mm; }"
+       style = style + "td,th{padding: 5px 2px;border-width:4px;border-right-width: 4px;border-left-width:4px; border-color: black;display: table-cell;text-align: left;vertical-align: left; white-space: nowrap; font-size: 14px;font-weight: 600;}";
+       
+       style = style + "table.okok,table.okok> tbody > th, table.okok> tbody >tr>td,table.okok> tbody > tr>th {border: solid 1px #000000; border-collapse: collapse;";
+       style = style + "padding: 2px 3px;text-align: left;}";
+       style = style + ".hide-on-print{display:none!important;}"
+       style = style + ".super-head{font-size:30px;font-family:'Gungsuh';font-weight:700;text-transform:uppercase;margin-bottom:-15px;}"
+       style = style + "table#custom.custom >tbody >tr {border: 0px!important;}";
+       style = style + "table#custom.custom >tbody >tr >td {border: 0px!important;}";
+       style = style + "</style>";
+       // CREATE A WINDOW OBJECT.
+       var win = window.open('', '', 'height=700,width=1200');
+
+
+       win.document.write('<html><head>');
+       win.document.write('<title>Print Invoice:</title>'); // <title> FOR PDF HEADER.
+       win.document.write(style); // ADD STYLE INSIDE THE HEAD TAG.
+       win.document.write('</head>');
+       win.document.write('<body>');
+       win.document.write('<table style="width:50%">    <tr>        <td>            <div>                <div class="super-head" style="line-height:60px;"><?PHP echo $company_current; ?></div>                <?php echo $about_remark_company; ?><br>                <?php echo $addres1_company; ?><br>                <?php echo $addres2_company; ?>                <div style="font-size: 12px;"> G.S.T. NO. - <?php echo $gst_company; ?>                    <br>PAN NO. - <?php echo $pan_no_company; ?>                    Phone no. -<?php echo $tel_no1_company ?> ,                    <?php echo $tel_no2_company; ?><br>Email - <?php echo $email_company; ?><br>                    Url - <?php echo $url_company; ?>                </div>            </div>        </td>    </tr>    <tr>        <td>            <center style="width:87%;"><b><u>BILL OF SUPPLY:</u></b></center>            <div><b><u>CUSTOMER</u></b></div>        </td>    </tr>    <tr>            <table class="okok" style="width:45%;">            <tr>                <td style="width:65%;font-size: 12px;">                NAME:- <?php echo $party_name; ?><br>                ADDRESS:- <?php echo $rowis['addres']; ?><?php echo ' , ' . $rowis['addres1'] ?><br>                PHONE:- <?php echo $rowis['phone']; ?>                </td>                <td style="width:35%;font-size: 12px;">                DATE: <?php $timestamp = strtotime($date);$new_date = date("d/m/Y", $timestamp);echo $new_date;?><br>                Invoice No.: <?php echo $id_to_new; ?>                </td>                         </tr>            <tr>         </table>    </tr>    <tr>        <table class="okok" style="width:45%">            <tr>                <td style="width:10%;">                    Sr.No.                </td>                <td style="width:70%;">                    Description                </td>                <td style="width:20%;">                    Amount                </td>            </tr>            <tr>                <td style="width:10%;">                    <?php echo $sn1 ?><br><br><br>                </td>                <td style="width:70%;white-space: inherit;">                    <?php echo $des1 ?><br><br><br>                </td>                <td style="width:20%;text-align:right!important;">                 <?php echo $amt1 ?><br><br><br>                </td>            </tr>            <tr>                <td style="width:10%;">                   <?php if (!empty($sn2)) {                                            echo $sn2;                                        } ?>                                                                                <?php if(strlen($des2) > 140){                                         echo '<br><br><br><br><br><br><br>';                                        }else{                                            echo '<br><br><br><br><br><br><br><br><br><br><br><br>';                                        } ?>                                                        </td>                <td style="width:70%;white-space: inherit;">                  <?php if (!empty($des2)) {                                            echo $des2;                                        } ?>                                                                                <?php if(strlen($des2) > 140){                                         echo '<br><br><br><br><br><br><br>';                                        }else{                                            echo '<br><br><br><br><br><br><br><br><br><br><br><br>';                                        } ?>                                                                                                                                        </td>                <td style="width:20%;text-align:right!important;">                 <?php if (!empty($amt2)) {                                            echo $amt2;} ?>                                  <?php if(strlen($des2) > 200){                                         echo '<br><br><br><br><br><br><br>';                                        }else{                                            echo '<br><br><br><br><br><br><br><br><br><br><br><br><br><br>';                                        } ?>                                                        </td>            </tr>            <tr>                <td style="width:8%;">                </td>                <td style="width:60%;text-align:right!important;">                    Total:                </td>                <td style="width:10%;text-align:right!important;">                    <?php echo $amt1 + $amt2; ?>                </td>            </tr>        </table>    </tr></table><br>    <table >        <tr>                        <td style="font-size:10px;white-space: inherit;"><u>Our bank details:-</u><br>Bank Name - <?php echo $bank_name_company; ?><br>Account No. - <?php echo $acc_no_company; ?><br>RTGS Code No. - <?php echo $rtgs_code_company; ?></td>                     <td style="padding-left: 25px;">FOR: - <?php echo $company_current ?><br><br><br>                <pre>        Prop./Manager</pre>            </td>            <td style="width:40%"></td>        </tr>    </table>    <hr style="height:7px;width:40%;float:left;color:black;">');
+       win.document.write('</body></html>');
+       win.document.close(); // CLOSE THE CURRENT WINDOW.
+       
+
+
+       win.print(); // PRINT THE CONTENTS.
+   }
+    createPDF();
+    </script>
+   <?php
+ }
+ else{
+    echo "error. : ". $sql_i;
+     //do nothingggg
+ }
+    }
+}
+
+else{
+    //if not submitted
+}
+
+?>
+
+
+<h6 class="center"><b><u>CREATE BILL <div id = "dev"></div></u></b></h6>
+
+<div class="row">
+<div class="col l3">
+<h6><b>
+<?php echo $party_name; ?><br><?php echo $rowis['addres'];?><br><?php echo $rowis['addres1']?>
+</b></h6>
+</div>
+
+<div class="col l6"></div>
+
+<div class="col l3" style="margin-top:20px;">
+    
+       <b> Invoice No. -  <?php echo $id_to_new; ?></b>
+</div>
+
+</div>
+<BR>
+<BR>
+
+
+<form class="white" style="padding:10px;" action="add_invoice.php?tb=<?php echo $_GET['tb'] ?>&pn=<?php echo $_GET['pn'] ?>" method="POST" >
+
+<div class="row">
+<div class="col l9"></div>
+<div class="col l2">
+    <label>Date:</label>
+    <input type="date" name="date">
+    <div class="red-text"><?php echo $err['d'] ?></div>
+</div>
+</div>
+<br>
+
+
+<div class="row">
+<div class="col l1" style="margin-left:15px;">    
+<label><B>S.NO</B>  </label>
+
+</div>
+
+
+
+<div class="col l8 center">    
+<label><B>DESCRIPTION</B>  </label>
+</div>
+
+
+<div class="col l2 center">    
+<label><B>AMOUNT</B>  </label>
+</div>
+
+</div>
+
+
+
+
+<div class="row">
+<div class="col l1" style="margin-left:15px;">
+<input name="sr1" type="number" value=1>
+<div class="red-text"><?php echo $err['s'] ?></div>
+</div>
+
+
+
+
+<div class="col l8 center">    
+<input name="ds1" type="text" value="Brokerage Charges For The Period From 1/04/2019 to 31/03/2020" >
+<div class="red-text"><?php echo $err['ds'] ?></div>
+</div>
+
+<div class="col l2 center">    
+<input name="amt1" type="number" value="<?php echo $total_brok ?>" onchange="dosum()" oninput="dosum()"  id="amt1">
+<div class="red-text"><?php echo $err['a'] ?></div>
+</div>
+
+</div>
+
+
+<div class="row">
+
+<div class="col l1" style="margin-left:15px;">
+<input name="sr2" type="number">
+</div>
+
+
+
+<div class="col l8 center">    
+<input name="ds2" type="text" >
+</div>
+
+<div class="col l2 center">    
+<input name="amt2" type="number" onchange="dosum()" oninput="dosum()"   id="amt2">
+</div>
+
+
+</div>
+
+<div class="row container">
+<div class="col l9"></div>
+<div class="col l3" style="margin-left: 87%;">
+    <label> TOTAL - </label><input id="sum_result" type="number" disabled class="brand" name="total_sum">
+</div>
+</div>
+<div class="center">
+<input type="submit" name="submit" value="submit and print" class="btn center white-text brand-btn"> 
+    </div>
+</form><br>
+
+    <script>
+        function dosum(){
+            let amt1 = document.getElementById("amt1").value;
+            let amt2 = document.getElementById("amt2").value;
+            if(amt1 == ''){
+                amt1 = 0;
+            }else{
+                amt1 = parseInt(amt1);
+            }
+            if(amt2 == ''){
+                amt2 = 0;
+            }else{
+                amt2 = parseInt(amt2);
+            }
+            // console.log(amt1,amt2);
+            document.getElementById("sum_result").value = amt1 + amt2;
+      
+            document.getElementById("print_total").innerHTML = amt1 + amt2;
+
+        }
+        dosum();
+        </script>
+
+
+ 
+
+<?php }
+else{
+    echo "some error occured";
+} ?>
+
+
+
+
+
+
+
+<?php
+else:
+
+?>
+<div class="container">
+<h4>
+Please Check Url
+</h4>
+</div>
+
+<?php
+    //do else
+endif;
+ ?>
+<?php include('footer.php'); ?>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Time Table</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col">
+        <h1>Time Table</h1>
+        <div class="list-group" id="timetable-list">
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    // Function to fetch JSON data from an endpoint
+    async function fetchData() {
+      try {
+        const response = await fetch('/timetable/base.json' );
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+
+    // Function to generate the HTML for each item
+    function generateItems(data) {
+      const timetableList = document.getElementById('timetable-list');
+
+      data.forEach((item) => {
+        const itemButton = document.createElement('a');
+        itemButton.href = "sheet.html?path=" + item.path +"&title=" + item.name;
+        itemButton.className = 'list-group-item list-group-item-action';
+        itemButton.innerText = item.name;
+
+        timetableList.appendChild(itemButton);
+      });
+    }
+
+    // Fetch the data and generate items
+    fetchData()
+      .then((data) => generateItems(data))
+      .catch((error) => console.error('Error:', error));
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

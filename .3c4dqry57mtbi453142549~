@@ -1,0 +1,127 @@
+<?php
+include('session.php');
+include('conn.php');
+$page_title = 'Contract Note';
+include('header.php');
+?>
+<?php
+$__eid = '';
+if (isset($_POST['submit'])) {
+
+    if (empty($_POST['contract_id'])) {
+        $id = 0;
+        $__eid = 'Please Enter a id';
+    } else {
+        if (!empty($_POST['s_c_p'])) {
+           $s_c_p = $_POST['s_c_p'];
+        }else{$s_c_p = '';}
+
+        if (!empty($_POST['b_c_p'])) {
+            $b_c_p = $_POST['b_c_p'];
+         }else{$b_c_p = '';}
+
+         if (!empty($_POST['oth_remarks'])) {
+            $oth_remarks = $_POST['oth_remarks'];
+         }else{$oth_remarks = '';}
+
+         
+
+        $id = $_POST['contract_id'];
+        $sql = "select * from `r_contract` where `id` = '$id' and `company` = '$company_current' ";
+        $query = mysqli_query($conn, $sql);
+        $result = mysqli_fetch_assoc($query);
+
+        if (mysqli_num_rows($query) > 0) {
+            $sql_buyer = "select `addres`,`addres1` from `ledgers` where `name` = '{$result['buyer_party']}'";
+            $sql_seller = "select `addres`,`addres1` from `ledgers` where `name` = '{$result['seller_party']}'";
+
+            $query_buyer = mysqli_query($conn, $sql_buyer);
+            $result_buyer = mysqli_fetch_assoc($query_buyer);
+
+            $query_seller = mysqli_query($conn, $sql_seller);
+            $result_seller = mysqli_fetch_assoc($query_seller);
+
+     $buyer_addres = ' '.$result_buyer['addres'].' , '.$result_buyer['addres1'];
+     $seller_addres = ' '.$result_seller['addres'].' ,' .$result_seller['addres1'];
+
+
+            // print_r($result); ?>
+<script>
+      function createPDF() {
+       
+
+       var style = "<style>";
+       style = style + "td.brokerage{text-align:right!important;}pre { font-size: 12px; font-family: sans-serif; }"
+       // style = style + "@page { size: auto;  margin: 0mm; }"
+       style = style + "td,th{padding: 5px 2px;border-width:4px;border-right-width: 4px;border-left-width:4px; border-color: black;display: table-cell;text-align: left;vertical-align: left; white-space: nowrap; font-size: 14px;font-weight: 600;}";
+       style = style + "table.okok {width:80%;margin-left:80px;font: 17px Calibri;}";
+       style = style + "table.okok,table.okok> tbody > th, table.okok> tbody >tr>td,table.okok> tbody > tr>th {border: solid 1px #DDD; border-collapse: collapse;";
+       style = style + "padding: 2px 3px;text-align: left;}";
+       style = style + ".hide-on-print{display:none!important;}"
+       style = style + ".super-head{font-size:30px;font-family:'Gungsuh';font-weight:700;text-transform:uppercase;margin-bottom:-18px;}"
+       style = style + "table#custom.custom >tbody >tr {border: 0px!important;}";
+       style = style + "table#custom.custom >tbody >tr >td {border: 0px!important;}";
+       style = style + "</style>";
+       // CREATE A WINDOW OBJECT.
+       var win = window.open('', '', 'height=700,width=1200');
+
+
+       win.document.write('<html><head>');
+       win.document.write('<title>Print Contract Note:</title>'); // <title> FOR PDF HEADER.
+       win.document.write(style); // ADD STYLE INSIDE THE HEAD TAG.
+       win.document.write('</head>');
+       win.document.write('<body>');
+       win.document.write('<center><div style="font-size:10px;">Subject to <?php echo $addres2_company; ?> Jurisdiction</div></center><center><table class="custom" id="custom">                    <tr>                    <center>                    <td style="width:14%"></td>                        <td style="font-size:10px;">                        G.S.T. NO. - <?php echo $gst_company; ?><br>PAN NO. - <?php echo $pan_no_company; ?>                    </td><td style="width:14%"></td>                                                <td><center>                                                            <div class="super-head"><?PHP echo $company_current; ?></div>                                 <br><?php echo $addres1_company; ?> <br> <?php echo $addres2_company; ?>                                 <br><br><B><u>CONTRACT NOTE:</u></B></div>                                </center>                        </td><td style="width:14%"></td>                                               <TD style="margin-left:20px;font-size:10px;">Phone no. -<?php echo $tel_no1_company ?> , <?php echo $tel_no2_company; ?><br>Email - <?php echo $email_company; ?><br>Url - <?php echo $url_company; ?></TD>                                                </center><td style="width:14%"></td> </tr>                         </center>                </table>                       <hr style="border-top: dotted 2px;" />                <br>                <table>                    <tr>                        <td>                          <b>  Contract No: <?php echo $result['id'] ?></b>                        </td>                        <td colspan="4"></td>                        <td>                           <b> Date: <?php echo date("d/m/Y", strtotime($result['date']));   ?></b>                        </td>                    </tr>                    <tr><td colspan="6"><br><br> <center><b>   On your behalf we have sold/purchased in your account as per Telephone Talk With Shri  <?php if(!empty($s_c_p)){echo $s_c_p;}else{echo '.......................';} ?>    <br> on behalf of the seller and with Shri <?php if(!empty($b_c_p)){echo $b_c_p;}else{echo '.......................';} ?>  on behalf of Buyer Dated <?php echo date("d/m/Y", strtotime($result['date'])); ?>         </b></center><br><br></td>                    </tr>                    <tr>                        <td>                            Seller Party: <?php echo $result['seller_party']; ?><br>                            <pre>          Address:<?php echo $seller_addres;?></pre>                            <br>                        </td>                    </tr>                    <tr>                        <td>                            Buyer Party : <?php echo $result['buyer_party']; ?><br>                            <pre>          Address:<?php echo $buyer_addres;?></pre>                            <br>                        </td>                                            </tr>                    <tr>                        <td>                       <pre> 1. Goods            :                    <?php echo $result['goods']; ?></pre>                        </td>                                            </tr>                    <tr>                        <td>                       <pre> 2. Quality          :                     <?php echo $result['quality']; ?></pre>                        </td>                                            </tr>                    <tr>                        <td>                       <pre> 3. Quantity         :                     <?php echo $result['quantity']; ?> <?php echo $result['r_unit']; ?></pre>                        </td>                                            </tr>                    <tr>                        <td>                       <pre> 4. Rate             :                         <?php echo $result['RATE']; ?> </pre>                        </td>                                            </tr>                    <tr>                        <td>                       <pre> 5. DELIVERY CONDITION :                      <?php echo $result['del_con']; ?> </pre>                        </td>                                            </tr>                    <tr>                        <td>                    <pre> 6. Dispatch Station From :                      <?php echo $result['dsf']; ?> </pre>                        </td>                                            </tr>                    <tr>                        <td>                     <pre> 7. Dispatch Station From :                      <?php echo $result['dsf']; ?> </pre>                        </td>                                            </tr>                    <tr>                        <td>                       <pre> 8. Payment Condition :                        <?php echo $result['pay_con']; ?> </pre><br>                        </td>                                            </tr>                    <tr>                        <td>                    <pre> 9. Other Remarks : <br>   <?php if(!empty($oth_remarks)){echo $oth_remarks;}else{echo '<br>'.'........................................................................';} ?></pre>                     </td>                                            </tr></table><hr style="border-top: dotted 2px;" /><table><tr><td><div align="right" style="margin-left:70%;">FOR: - <?php echo $company_current ?><br><br><br><pre>        Prop./Manager</pre></div></td><td style="width:10%"></td></tr><tr>    <td colspan="6">    <center>     <b> <br>  NOTE: In case of any dispute to the aforesaid contract the decision of the broker shall be      <br>  final and bining on both the parties. </b>    </center></td></tr>                </table>            </center><br>');
+       win.document.write('</body></html>');
+       win.document.close(); // CLOSE THE CURRENT WINDOW.
+       
+
+
+       win.print(); // PRINT THE CONTENTS.
+   }
+    createPDF();
+    </script>
+
+
+<?php
+        } else {
+            $__eid = 'Please Enter A Valid ID';
+        }
+    }
+}
+
+?>
+
+<section class="container grey-text">
+    <form class="white" style="padding:30px;margin-top:20px;width:40%;margin:10px auto;" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST">
+        <h4 class="center">
+            Enter Contract ID:
+        </h4><br>
+<label>Contract ID:</label>
+        <input type="number" name="contract_id">
+
+        <label>Seller Contact Person (not mandotary):</label>
+        <input type="text" name="s_c_p">
+
+        <label>Buyer Contact Person (not mandotary):</label>
+        <input type="text" name="b_c_p">
+
+        <label>Other Remarks (not mandotary):</label>
+        <input type="text" name="oth_remarks">
+
+
+
+        <input type="submit" class="btn " name="submit" value="submit and print" style="margin-top: 20px;">
+        <div class="red-text"><br>
+            <?php echo $__eid; ?>
+        </div>
+    </form>
+</section>
+
+
+
+
+
+
+
+<?php include('footer.php'); ?>

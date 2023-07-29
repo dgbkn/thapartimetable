@@ -1,0 +1,55 @@
+<?php
+require 'smsapi/autoload.php';
+
+use SMSGatewayMe\Client\ApiClient;
+use SMSGatewayMe\Client\Configuration;
+use SMSGatewayMe\Client\Api\MessageApi;
+use SMSGatewayMe\Client\Model\CancelMessageRequest;
+
+if(isset($_POST['cancelid'])){
+    $id = $_POST['cancelid'];
+    $steps=$_POST['steps'];
+    if($steps<=4){
+
+// Configure client
+$config = Configuration::getDefaultConfiguration();
+$config->setApiKey('Authorization', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJhZG1pbiIsImlhdCI6MTU5MjQwNTcwNCwiZXhwIjo0MTAyNDQ0ODAwLCJ1aWQiOjc5Mzg5LCJyb2xlcyI6WyJST0xFX1VTRVIiXX0.WtHiPGrrK5iSciRf4HKpVi3iFCVLm8jpIVA3hMYuk04');
+$apiClient = new ApiClient($config);
+$messageClient = new MessageApi($apiClient);
+
+for ($x = 0; $x < $steps; $x++) {
+    ${'cancelMessageRequest'.$x} = new CancelMessageRequest([
+    'id' => $id + $x
+]);
+
+
+$canceledMessaged = $messageClient->cancelMessages([
+    ${'cancelMessageRequest'.$x}
+]);
+}
+}
+else{
+    echo 'Maximum 4 messages are allowed';
+}
+
+
+
+//print_r($canceledMessaged);
+
+}
+?>
+
+<html>
+    <head>
+        <title>
+            Cancel a sms
+        </title>
+    </head>
+    <body>
+        <form action='cancelsms.php' method='post'>
+            Starting message id:-<input type='number' name='cancelid'><br>
+            Steps:-<input type='number' name='steps'><br>
+            <input type="submit" value="Submit" name='submit'>
+        </form>
+    </body>
+</html>

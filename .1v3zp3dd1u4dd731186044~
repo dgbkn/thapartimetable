@@ -1,0 +1,645 @@
+
+
+
+
+
+<?php
+include('session.php');
+?>
+
+
+
+<?php include('conn.php');
+include('smsapi/smsapi.php');
+// require 'smsapi/autoload.php';
+
+// use SMSGatewayMe\Client\ApiClient;
+// use SMSGatewayMe\Client\Configuration;
+// use SMSGatewayMe\Client\Api\MessageApi;
+// use SMSGatewayMe\Client\Model\SendMessageRequest;
+ $date_sql = "SELECT * FROM `financial_year`";
+ $query_date = mysqli_query($conn,$date_sql);
+ $res_date = mysqli_fetch_assoc($query_date);
+//  echo $res_date['begin'];
+//  echo $res_date['end'];
+//  
+ ?>
+
+<?php
+$dev ='';
+
+$s_party = $b_party = $goods = $quantity = $rate = $deli_con = $quality = $dis_st_from =$unit= $pay_con =$s_brok=$b_brok= '';
+$error = ['date' => '', 's_party' => '', 'b_party' => '', 'goods' => '', 'quantity' => '', 'rate' => '', 'deli_con' => '', 'quality' => '', 'dis_st_from' => '', 'pay_con' => '', 's_brok' => '', 'b_brok' => '','unit'=> ''];
+$page_title = 'Add Contract ';
+ include('header.php') ;
+$sql123 = "SELECT name FROM `ledgers` ";
+$result123 = mysqli_query($conn, $sql123);
+
+
+$sqlld = "SELECT `id` FROM `r_contract` ORDER BY `id` DESC LIMIT 1
+";
+$resultld = mysqli_query($conn, $sqlld);
+$last_id = mysqli_fetch_assoc($resultld);
+if (isset($last_id['id'])) {
+    $new_id = 1 +  $last_id['id'];
+} else {
+    $new_id = 1;
+}
+
+
+$sql1234 = "SELECT name FROM `goods`";
+$result1234 = mysqli_query($conn, $sql1234);
+// echo $new_id;
+
+
+
+
+
+$sql_g = "SELECT name FROM `ledgers` order by `name` asc";
+$result_g = mysqli_query($conn, $sql_g);
+
+
+$sql_g1 = "SELECT name FROM `ledgers` order by `name` asc";
+$result_g1 = mysqli_query($conn, $sql_g1);
+
+
+
+
+$date =  date('Y-m-d'); 
+
+if (isset($_POST['submit'])) {
+   
+    // echo $_POST['group'];
+    //true if form submitted
+    if (empty($_POST['date'])) {
+        $error['date'] = "Enter date";
+        
+    } else {
+        if($_POST['date'] > $res_date['end'] || $_POST['date'] < $res_date['begin'] ){
+            $error['date'] = "Enter date between financial year";}else{
+                $date = $_POST['date'];
+            }
+      
+    }
+
+
+    if (empty($_POST['s_party'])) {
+        $error['s_party'] =  "Enter seller_party";
+    } else {
+        $s_party = $_POST['s_party'];
+    }
+
+    if (empty($_POST['b_party'])) {
+        $error['b_party'] =  "Enter buyer_party";
+    } else {
+        $b_party = $_POST['b_party'];
+    }
+
+
+    if (empty($_POST['goods'])) {
+        $error['goods'] =  "Enter Goods";
+    } else {
+        $goods = $_POST['goods'];
+    }
+  
+
+    
+    if (empty($_POST['quantity'])) {
+        $error['quantity'] =  "Enter quantity";
+    } else {
+        $quantity = $_POST['quantity'];
+    }
+
+    if (empty($_POST['rate'])) {
+        $error['rate'] =  "Enter rate";
+    } else {
+        $rate = $_POST['rate'];
+    }
+
+    if (empty($_POST['unit'])) {
+        $error['unit'] =  "Enter unit";
+    } else {
+        $unit = $_POST['unit'];
+    }
+
+
+    
+
+    if (!empty($_POST['deli_con'])) {
+        $r_e_m = "Remarks: ".$_POST['deli_con'];
+        $deli_con = $_POST['deli_con'];
+    } else {
+        $r_e_m ='';
+        $deli_con = "NULL";
+    }
+
+    if (!empty($_POST['quality'])) {
+        $quality = $_POST['quality'];
+    } else {
+        $quality = "NULL";
+    }
+    
+    if (!empty($_POST['dis_st_from'])) {
+        $dis_st_from = $_POST['dis_st_from'];
+    } else {
+        $dis_st_from = "NULL";
+    }
+
+    if (!empty($_POST['pay_con'])) {
+        $pay_con = $_POST['pay_con'];
+    } else {
+        $pay_con = "NULL";
+    }
+
+
+
+    if (!empty($_POST['s_brok'])) {
+
+        $s_brok = $_POST['s_brok'];
+    } else {
+        $s_brok = 0;
+    }
+
+
+
+    if (!empty($_POST['b_brok'])) {
+
+        $b_brok = $_POST['b_brok'];
+    } else {
+        $b_brok = 0;
+    }
+
+   
+
+
+
+    if (!array_filter($error)) {
+        
+
+     //$date  = date("d/m/Y", strtotime($date));
+
+        $sql = "INSERT INTO `r_contract`(`id`,`date`, `seller_party`, `buyer_party`, `goods`, `RATE`, `quantity`, `r_unit`, `del_con`, `quality`, `dsf`, `pay_con`, `sb`, `bb`, `company`) 
+			VALUES ('$new_id','$date','$s_party','$b_party','$goods','$rate','$quantity','$unit', '$deli_con' , '$quality','$dis_st_from','$pay_con','$s_brok','$b_brok', 'GOYAL TRADERS')";
+
+        if (!mysqli_query($conn, $sql)) {
+            echo '<div class="container">' . "<h6> Error: " . $sql . "<br>" . mysqli_error($conn) . '</div>';
+
+        } else {
+            ?>
+            
+            <?php
+             
+            if(isset($_POST['ischecked'])){
+                
+                
+              $dev_sql=   "SELECT `phone` FROM `ledgers` WHERE `name` = '$s_party' and `company`='$company_current'";
+              $dev_sql1=   "SELECT `phone` FROM `ledgers` WHERE `name` = '$b_party' and `company`='$company_current'";
+
+              $dev_q = mysqli_query($conn,$dev_sql);
+              $dev_q1 = mysqli_query($conn,$dev_sql1);
+
+              $r_dev = mysqli_fetch_assoc($dev_q);
+              $r_dev1 = mysqli_fetch_assoc($dev_q1);
+
+              $seller_phone = $r_dev['phone'];
+              $seller_phone1 = $r_dev['phone1'];
+              $buyer_phone = $r_dev1['phone'];
+              $buyer_phone1 = $r_dev1['phone1'];
+
+
+              if(!empty($seller_phone) && !empty($buyer_phone)){
+              
+      
+      
+
+
+ $message ='Transaction Details:- Date:- '.date("d/m/Y", strtotime($date)). ' Seller Party:'.' '.$s_party.', Buyer Party:'.' '.$b_party.',  '.$goods.'-'.' '.$quantity.' '.$unit.' '.'@'.$rate .' '.$r_e_m;
+//new
+// Configure client
+// $config = Configuration::getDefaultConfiguration();
+// $config->setApiKey('Authorization', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJhZG1pbiIsImlhdCI6MTU4NzAzOTc3MCwiZXhwIjo0MTAyNDQ0ODAwLCJ1aWQiOjc5Mzg5LCJyb2xlcyI6WyJST0xFX1VTRVIiXX0.G9NNhR5BNWwPOCBrvlFd89q7u5963PcozePjdK3930s');
+// $apiClient = new ApiClient($config);
+// $messageClient = new MessageApi($apiClient);
+
+             
+
+// $sendMessageRequest1 = new SendMessageRequest([
+//     'phoneNumber' => $tel_no2_company,
+//     'message' => $message,
+//   'deviceId' => 116747
+// ]);
+// $sendMessageRequest2 = new SendMessageRequest([
+//     'phoneNumber' => $tel_no1_company,
+//     'message' => $message,
+//   'deviceId' => 116747
+// ]);
+
+// $sendMessageRequest3 = new SendMessageRequest([
+//     'phoneNumber' => $seller_phone,
+//     'message' => $message,
+//     'deviceId' => 116747
+// ]);
+
+// $sendMessageRequest4 = new SendMessageRequest([
+//     'phoneNumber' => $buyer_phone,
+//     'message' => $message,
+//     'deviceId' => 116747
+// ]);
+
+// $sendMessages = $messageClient->sendMessages([$sendMessageRequest1,$sendMessageRequest2,$sendMessageRequest3,$sendMessageRequest4]);
+
+
+
+// print_r($sendMessages);
+
+if(isset($_POST['ischeckeda']) && 
+   $_POST['ischeckeda'] == 'checked') 
+{
+    $send2 = sendsms($tel_no1_company,$message,$new_id);
+
+}else{
+    $send2 = 1;
+
+}
+
+if(isset($_POST['ischeckedy']) && 
+   $_POST['ischeckedy'] == 'checked') 
+{
+$send1 = sendsms($tel_no2_company,$message,$new_id);
+
+}else{
+    $send1 = 1;
+
+}
+
+
+if(isset($_POST['ischeckedb']) && 
+   $_POST['ischeckedb'] == 'checked') 
+{
+$send4 = sendsms($buyer_phone,$message,$new_id);
+
+}else{
+    $send4 = 1;
+
+}
+
+
+if(isset($_POST['ischeckedb1']) && 
+   $_POST['ischeckedb1'] == 'checked') 
+{
+$send5 = sendsms($buyer_phone1,$message,$new_id);
+
+}else{
+    $send5 = 1;
+
+}
+
+if(isset($_POST['ischeckeds1']) && 
+   $_POST['ischeckeds1'] == 'checked') 
+{
+$send6 = sendsms($seller_phone1,$message,$new_id);
+
+}else{
+    $send6 = 1;
+
+}
+
+
+if(isset($_POST['ischeckeds']) && 
+   $_POST['ischeckeds'] == 'checked') 
+{
+$send3 = sendsms($seller_phone,$message,$new_id);
+
+}else{
+    $send3 = 1;
+
+}
+
+
+
+
+// $send5 = sendwa($tel_no2_company,$message);
+// $send6 = sendwa($tel_no1_company,$message);
+// $send7 = sendwa($seller_phone,$message);
+// $send8 = sendwa($buyer_phone,$message);
+
+// $sendMessages = [$send1,$send2,$send3,$send4,$send5,$send6,$send7,$send8];
+// $sendMessages = [$send1,$send2,$send3,$send4,$send7,$send8];
+$sendMessages = [$send1,$send2,$send3,$send4];
+
+if(array_filter($sendMessages)){
+    // echo  $sendMessageRequest1,$sendMessageRequest2;
+    $dev = "& Message Sent Successfully";
+}else{
+    $dev = "But Message Failed to Sent";
+}
+//new end
+
+
+
+}else{
+    $dev = "Message Failed, Please Add Numbers of Sender OR Buyer Party";
+
+}
+} else{
+                // echo 'not checked';
+                //when send sms is not checked
+             } 
+
+             $new_id = $new_id + 1;
+            // header('Location: contract_view.php');
+            mysqli_close($conn);
+        }
+    }
+
+else{  // echo "<script>  error();</script>";
+
+}
+
+} 
+
+$err = "'Check for errors in the form'";
+$done = "'Done! Contract is added $dev'";
+?>
+<body onload=" <?php if(array_filter($error)){echo 'M.toast({html:'.$err.' });';}elseif(!array_filter($error) and isset($_POST['submit'])){echo 'M.toast({html:'.$done.'});';} ?> ">
+<section class="container grey-text ">
+
+
+    <form class="white" style="padding: 20px;margin: 10px auto;max-width: 100%;margin-bottom:40px;" action="<?php $_SERVER['PHP_SELF'] ?>" method="POST" >
+        <h4 class="grey-text center">Contract Fourm</h4>
+        <div class="row">
+            <div class="col s6 m6 l6">
+                <h6>
+                    <div class="grey lighten-4 black-text">Contract ID: <?php echo $new_id ?></pre>
+                </h6>
+            </div>
+            <div class="col s6 m6 l6">
+                <div class="input-field">
+                    <i class="material-icons prefix">date_range</i>
+                    <input type="date" id="date" name="date" class="" value="<?php echo htmlspecialchars($date); ?>" min="<?php echo $res_date['begin']; ?>" max="<?php echo $res_date['end'];?>">
+                    <div class="red-text"><?php echo htmlspecialchars($error['date']) ?></div>
+
+                    <!-- <label for="date">Choose a date...</label> -->
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col s6 m6 l6">
+                <label>Seller Party</label>
+                <select class="initialized" type="text" name="s_party">
+                    <option value="" disabled selected> ...Select Seller Party... </option>
+                    <?php if (mysqli_num_rows($result_g) > 0) {
+                        // output data of each row
+                        while ($rowg = mysqli_fetch_assoc($result_g)) { ?>
+
+                            <option><?php echo $rowg['name']; ?></option>
+                    <?php }
+                    } else {
+                        echo 'no Seller Party';
+                    } ?> ?>
+                </select>
+                <div class="red-text"><?php echo htmlspecialchars($error['s_party']) ?></div>
+
+            </div>
+
+
+            <div class="col s6 m6 l6">
+
+
+                <label>Buyer Party</label>
+                <select class="initialized" type="text" name="b_party">
+                    <option value="" disabled selected> ...Select Buyer Party... </option>
+                    <?php if (mysqli_num_rows($result_g1) > 0) {
+                        // output data of each row
+                        while ($rowg1 = mysqli_fetch_assoc($result_g1)) { ?>
+
+                            <option><?php echo $rowg1['name']; ?></option>
+                    <?php }
+                    } else {
+                        echo 'no Buyer Party';
+                    } ?> ?>
+                </select>
+                <div class="red-text"><?php echo htmlspecialchars($error['b_party']) ?></div>
+
+            </div>
+        </div>
+
+
+
+
+        <div class="row">
+            <div class="col s6 m6 l3">
+
+                <label>Goods:</label>
+                <select class="initialized" type="text" name="goods">
+                    <option value="" disabled selected> ...Select Goods... </option>
+                    <?php if (mysqli_num_rows($result1234) > 0) {
+                        // output data of each row
+                        while ($rowg1234 = mysqli_fetch_assoc($result1234)) { ?>
+
+                            <option><?php echo $rowg1234['name']; ?></option>
+                    <?php }
+                    } else {
+                        echo 'no goods';
+                    } ?>
+                </select>
+                <div class="red-text"><?php echo htmlspecialchars($error['goods']) ?></div>
+
+            </div>
+
+            <div class="col s6 m6 l3">
+                <label>Quantity:</label>
+                <input type="text" name="quantity">
+                <div class="red-text"><?php echo htmlspecialchars($error['quantity']) ?></div>
+            </div>
+            <div class="col s6 m6 l2">
+                <label>Unit:</label>
+                <select name="unit" value="<?php echo htmlspecialchars($unit) ?>">
+                    <option>MT</option>
+                    <option>BAGS</option>
+                    <option>TIN</option>
+
+                </select>
+                <div class="red-text"><?php echo htmlspecialchars($error['unit']) ?></div>
+            </div>
+
+            <div class="col s6 m6 l4" style="margin-top:2px;">
+                <label>Rate:</label>
+                <input type="text" id="rate" name="rate" class="">
+                <div class="red-text"><?php echo htmlspecialchars($error['rate']) ?></div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col s6 m6 l4">
+                <label>Delivery Condition:</label>
+                <input type="text" id="deli_con" name="deli_con" class="">
+            </div>
+            <div class="col s6 m6 l4">
+                <label>Quality:</label>
+                <input type="text" id="quality" name="quality" class="">
+            </div>
+            <div class="col s6 m6 l4">
+                <label>Dispatch Station From:</label>
+                <input type="text" id="dis_st_from" name="dis_st_from" class="">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col s6 m6 l4">
+                <label>Payment Condition:</label>
+                <input type="text" id="pay_con" name="pay_con" class="">
+            </div>
+            <div class="col s6 m6 l4">
+                <label>Seller Brokerage:</label>
+                <input type="number" step="any" id="s_brok" name="s_brok" class="">
+            </div>
+            <div class="col s6 m6 l4">
+                <label>Buyer Brokerage:</label>
+                <input type="number" id="b_brok" step="any" name="b_brok" class="">
+            </div>
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <div class="left">
+        <label>
+                                    <input type="checkbox" name="ischecked" class="filled-in" value="checked" id="smscheckbox" onclick="mysmsfunc()">
+
+                                    <span style="margin-right: 10px;">Send SMS</span>
+                                </label>
+                                
+                                
+                                       <label>
+                                    <input type="checkbox" name="ischeckeda" class="filled-in" value="checked" id="smscheckbox1" >
+
+                                    <span style="margin-right: 10px;">Anand</span>
+                                </label>
+                                
+                                       <label>
+                                    <input type="checkbox" name="ischeckedy" class="filled-in" value="checked" id="smscheckbox2" >
+
+                                    <span style="margin-right: 10px;">Yogesh</span>
+                                </label>
+                                
+                                       <label>
+                                    <input type="checkbox" name="ischeckedb" class="filled-in" value="checked" id="smscheckbox3" >
+
+                                    <span style="margin-right: 10px;">Buyer</span>
+                                </label>
+                                
+                                        <label>
+                                    <input type="checkbox" name="ischeckeds" class="filled-in" value="checked" id="smscheckbox4" >
+
+                                    <span style="margin-right: 10px;">Seller</span>
+                                </label>
+                                
+                                
+                            <?php    if(!empty($seller_phone1)){ ?>
+                                          <label>
+                                    <input type="checkbox" name="ischeckeds1" class="filled-in" value="checked" id="smscheckbox5" >
+
+                                    <span style="margin-right: 10px;">Seller Ph 1</span>
+                                </label>
+                                    
+                                  <?php } ?>
+                                  
+                                                       <?php    if(!empty($buyer_phone1)){ ?>
+                                          <label>
+                                    <input type="checkbox" name="ischeckedb1" class="filled-in" value="checked" id="smscheckbox6" >
+
+                                    <span style="margin-right: 10px;">Buyer Ph 1</span>
+                                </label>
+                                    
+                                  <?php } ?>
+                                
+
+                                
+            <input type="submit" name="submit" value="submit" class="btn center white-text brand-btn" >
+            <a href="contract_view.php" class="btn" >cancel</a>
+         
+        </div>
+
+    </form>
+  
+
+</section>
+          <script>
+                function mysmsfunc() {
+  // Get the checkbox
+  var checkBox1 = document.getElementById("smscheckbox1");
+  var checkBox2 = document.getElementById("smscheckbox2");
+  var checkBox3 = document.getElementById("smscheckbox3");
+  var checkBox4 = document.getElementById("smscheckbox4");
+  <?php if(!empty($seller_phone1)){ ?>
+  var checkBox5 = document.getElementById("smscheckbox5");
+  <?php } ?>
+  
+    <?php if(!empty($buyer_phone1)){ ?>
+  var checkBox6 = document.getElementById("smscheckbox6");
+    <?php } ?>
+
+  // Get the output text
+
+  // If the checkbox is checked, display the output text
+  if (checkBox1.checked == true){
+checkBox1.checked = false;  }
+else {
+checkBox1.checked = true; }
+
+
+
+  if (checkBox2.checked == true){
+checkBox2.checked = false;  } else {
+checkBox2.checked = true; }
+
+
+  if (checkBox3.checked == true){
+checkBox3.checked = false;  } else {
+checkBox3.checked = true; }
+
+
+  if (checkBox4.checked == true){
+checkBox4.checked = false; } else {
+checkBox4.checked = true; }
+
+
+
+  if (checkBox5.checked == true){
+checkBox5.checked = false; } else {
+checkBox5.checked = true; }
+
+
+
+  if (checkBox6.checked == true){
+checkBox6.checked = false; } else {
+checkBox6.checked = true; }
+
+
+                }
+
+
+                </script>           
+         
+                </body>
+  
+
+<?php include('footer.php'); ?>
+
+
