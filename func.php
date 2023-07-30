@@ -90,7 +90,7 @@ function subjectReturner($subjectString)
 {
     $bestSubRegex = '/[UP][A-Za-z]{2}\d{3}/m';
 
-    if (preg_match($bestSubRegex, $subjectString, $matches)) {
+    if (preg_match_all($bestSubRegex, $subjectString, $matches, PREG_SET_ORDER, 0)) {
         // $remainingString = str_replace($matches[0], '', $subjectString);
         $remainingString = preg_replace($bestSubRegex, '', $subjectString);
         $trimmedString = trim($remainingString);
@@ -98,14 +98,16 @@ function subjectReturner($subjectString)
         $firstLetter = substr($trimmedString, 0, 1);
 
         if (!empty($firstLetter)) {
+          $names = implode('/', array_column($matches,0));
+          // print_r([$names,$subjectString]);
             if ($firstLetter == "L") {
-                return ["Lecture", trim($matches[0]), 1, $firstLetter];
+                return ["Lecture", $names, 1, $firstLetter];
             } else if ($firstLetter == "T") {
-                return ["Tutorial", trim($matches[0]), 1, $firstLetter];
+                return ["Tutorial", $names, 1, $firstLetter];
             } else if ($firstLetter == "P") {
-                return ["Practical", trim($matches[0]), 2, $firstLetter];
+                return ["Practical", $names, 2, $firstLetter];
             } else if ($firstLetter == "E") {
-                return ["Elective", trim($matches[0]), 1, $firstLetter];
+                return ["Elective", $names, 1, $firstLetter];
             }
         }
     }
@@ -154,8 +156,9 @@ function etgSchedule($timings, $schedule)
                         for ($i = $skey + 1; $i <= $ll; $i++) {
                             $extra .= ' ' . $schedule[$i];
                         }
-
-                        $events[] = ["details" => "$code $type $extra", "time" => $fTime, "week" => $weekday];
+                        $details = "$code $type $extra";
+                        $details =  str_replace("\n", " ", $details);
+                        $events[] = ["details" => $details, "time" => $fTime, "week" => $weekday];
                 }
 
             }
