@@ -20,6 +20,22 @@
     <ul class="nav nav-tabs" id="timetable-tabs" role="tablist">
     </ul>
 
+    <div class="container">
+  <div class="row">
+    <div class="col">
+      <div class="d-flex justify-content-center align-items-center h-100">
+      <!-- Loader -->
+    <div class="d-none" id="loader">
+      <br>
+      <div class="spinner-border text-primary" role="status">
+      </div>
+    </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
     <div class="tab-content" id="timetable-content">
     </div>
   </div>
@@ -30,9 +46,11 @@
   <script>
 
     async function fetchData() {
+     document.getElementById("loader").classList.remove("d-none");
       try {
         const response = await fetch('timetable/'+ getParamsFromURL()["path"]);
         const data = await response.json();
+        document.getElementById("loader").classList.add("d-none");
         return data;
       } catch (error) {
         console.error('Error fetching data:', error);
