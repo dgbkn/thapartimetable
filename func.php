@@ -31,7 +31,7 @@ function addArrays($a,$b){
 
 
 function checkLec($s){
-  if(str_contains($s,"U") && str_contains($s,"L")){
+  if((checkFirstLetter($s,"U") || checkFirstLetter($s,"P")) && str_contains($s,"L")){
     return true;
   }
   return false;
@@ -130,8 +130,18 @@ function giveCorrectTime($start,$end,$d){
 //   return $events;
 // }
 
+function checkFirstLetter($str,$l){
+  if(!empty($str)){
+    $f = $str[0];
+    if($f == $l){
+      return true;
+    }
+  }
+  return false;
+}
+
 function etgSchedule($timings, $schedule) {
-  print_r([$timings,$schedule]);
+  // print_r([$timings,$schedule]);
       $days = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' );
     $events = [];
     // $event = ["details": "" ,"time": ""];
@@ -144,7 +154,7 @@ function etgSchedule($timings, $schedule) {
        $weekday = $days[$cur_week_index];
        $s = $schedule[$skey];
       if(!empty($s)){  
-        if(str_contains($s,"U")){
+        if(checkFirstLetter($s,"U") || checkFirstLetter($s,"P")){
             $start = $time;
             $start_ = DateTime::createFromFormat('h:i A', $start);
             $firstWord = strtok($s, " ");
