@@ -31,9 +31,17 @@ function addArrays($a,$b){
 
 
 function checkLec($s){
-  if((checkFirstLetter($s,"U") || checkFirstLetter($s,"P")) && str_contains($s,"L")){
-    return true;
-  }
+  if (checkSubjectByRegex($s)){
+   $words = explode(' ', $s);
+   $firstWord = $words[0];
+    if(substr($firstWord, -1) == "L"){
+      return true;
+    }
+   $secWord = $words[1];
+  if(!empty($secWord) && $secWord[0] == "L"){
+        return true;
+  } 
+}
   return false;
 }
 
@@ -130,14 +138,27 @@ function giveCorrectTime($start,$end,$d){
 //   return $events;
 // }
 
-function checkFirstLetter($str,$l){
-  if(!empty($str)){
-    $f = $str[0];
-    if($f == $l){
-      return true;
-    }
+function checkSubjectByRegex($str){
+  //function to check subject code..
+  $str = trim($str);
+  $subjectRegex = '/^[UP][A-Z0-9]{5}$/';
+  $subjectRegex = '/^[UP][A-Z0-9]+$/';
+  $words = explode(' ', $str);
+  $firstWord = $words[0];
+
+
+  if (preg_match($subjectRegex, $firstWord, $matches)) {
+   return true;
   }
   return false;
+  
+  // if(!empty($firstWord)){
+  //   $f = $firstWord[0];
+  //   if($f == $l){
+  //     return true;
+  //   }
+  // }
+  // return false;
 }
 
 function etgSchedule($timings, $schedule) {
@@ -154,7 +175,7 @@ function etgSchedule($timings, $schedule) {
        $weekday = $days[$cur_week_index];
        $s = $schedule[$skey];
       if(!empty($s)){  
-        if(checkFirstLetter($s,"U") || checkFirstLetter($s,"P")){
+        if(checkSubjectByRegex($s)){
             $start = $time;
             $start_ = DateTime::createFromFormat('h:i A', $start);
             $firstWord = strtok($s, " ");
