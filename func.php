@@ -1,5 +1,7 @@
 <?php
 
+
+
 function getMagnificentKeys($arr)
 {
     $keys = [];
@@ -88,6 +90,7 @@ function arrayColumn($multiArray, $index)
 
 function subjectReturner($subjectString)
 {
+  $subs=json_decode(file_get_contents("subjects.json"), true);
     $bestSubRegex = '/[UP][A-Za-z]{2}\d{3}/m';
 
     if (preg_match_all($bestSubRegex, $subjectString, $matches, PREG_SET_ORDER, 0)) {
@@ -98,7 +101,17 @@ function subjectReturner($subjectString)
         $firstLetter = substr($trimmedString, 0, 1);
 
         if (!empty($firstLetter)) {
-          $names = implode('/', array_column($matches,0));
+          $names_onlyCode = array_column($matches,0);
+          foreach($names_onlyCode as $ok=>$noc){
+            $noc = trim($noc);
+          if(array_key_exists($noc, $subs)) {
+            $names_onlyCode[$ok] = trim($subs[$noc]["name"]) . " " . $noc;
+           }
+          }
+
+          // print_r($names_onlyCode);
+          
+          $names = implode('/',$names_onlyCode);
           // print_r([$names,$subjectString]);
             if ($firstLetter == "L") {
                 return ["Lecture", $names, 1, $firstLetter];
@@ -115,6 +128,8 @@ function subjectReturner($subjectString)
 
 }
 
+
+      
 
 function etgSchedule($timings, $schedule)
 {
