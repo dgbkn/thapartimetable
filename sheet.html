@@ -105,6 +105,7 @@
         exportButton.className = 'btn btn-primary mt-3';
         exportButton.onclick = function () {
           const icsContent = generateICSContent(batch);
+          // console.log(icsContent);
           const blob = new Blob([icsContent], { type: 'text/plain;charset=utf-8' });
           const filename = `schedule_${batch.name}.ics`;
           saveAs(blob, filename);

@@ -45,7 +45,7 @@
       if (!timeString) return '';
 
       // Remove "AM" or "PM" if present
-      timeString = timeString.replace(/ AM| PM/g, '');
+      // timeString = timeString.replace(/ AM| PM/g, '');
 
       const [time, period] = timeString.split(' ');
       const [hours, minutes] = time.split(':');
@@ -83,7 +83,8 @@
             week,
           } = item;
 
-          const [subject, location] = details.split(' ');
+          // const [subject, location] = details.split(' ');
+          var subject = bestSubjectCodesFromSchedule(details);
           const finalLoc = removeSubjectCodesFromSchedule(details);
           const [startTime, endTime] = time.split(' - ');
 
@@ -114,10 +115,40 @@
 
 
 
+function bestSubjectCodesFromSchedule(subjectString) {
+    const bestSubRegex = /[UP][A-Za-z]{2}\d{3}/g;
+  const afteritRegex =/(?<=[UP][A-Za-z]{2}\d{3}\b).*/gm;
+
+  // const result = subjectString.replace(locRegex, '');
+
+  var matches = subjectString.match(afteritRegex);
+  
+  if (matches) {
+    for (const match of matches) {
+      subjectString = subjectString.replace(match, '');
+    }
+  }
+  
+    return subjectString.trim();
+
+}
+
 
 function removeSubjectCodesFromSchedule(subjectString) {
   const bestSubRegex = /[UP][A-Za-z]{2}\d{3}/g;
-  const matches = subjectString.match(bestSubRegex);
+  const locRegex = /^.*?(?=\b[UP][A-Za-z]{2}\d{3}\b)/gm;
+
+  // const result = subjectString.replace(locRegex, '');
+
+  var matches = subjectString.match(locRegex);
+  
+  if (matches) {
+    for (const match of matches) {
+      subjectString = subjectString.replace(match, '');
+    }
+  }
+
+    matches = subjectString.match(bestSubRegex);
   
   if (matches) {
     for (const match of matches) {
