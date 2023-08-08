@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Time Table</title>
+  <style>
+    p {
+    margin-bottom: 0rem!important;
+    }
+    
+  </style>
+    <script src="./ics.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+  <div class="container mt-5">
+    <h1 id="titleFetch">Time Table</h1>
+
+    <ul class="nav nav-tabs" id="timetable-tabs" role="tablist">
+    </ul>
+
+    <div class="container">
+  <div class="row">
+    <div class="col">
+      <div class="d-flex justify-content-center align-items-center h-100">
+      <!-- Loader -->
+    <div class="d-none" id="loader">
+      <br>
+      <div class="spinner-border text-primary" role="status">
+      </div>
+    </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+    <div class="tab-content" id="timetable-content">
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script>
+
+    async function fetchData() {
+     document.getElementById("loader").classList.remove("d-none");
+      try {
+        const response = await fetch('timetable/'+ getParamsFromURL()["path"]);
+        const data = await response.json();
+        document.getElementById("loader").classList.add("d-none");
+        return data;
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+
+   document.getElementById("titleFetch").innerHTML = getParamsFromURL()["title"];
+
+    // Function to generate tabs and schedule for each batch
+    function generateTabsAndSchedule(data) {
+      const timetableTabs = document.getElementById('timetable-tabs');
+      const timetableContent = document.getElementById('timetable-content');
+
+      data.batches.forEach((batch, index) => {
+        const tabLink = document.createElement('a');
+        tabLink.href = `#batch-${index + 1}`;
+        tabLink.className = 'nav-item nav-link';
+        tabLink.innerText = batch.name;
+
+        const tabPane = document.createElement('div');
+        tabPane.id = `batch-${index + 1}`;
+        tabPane.className = 'tab-pane fade';
+        if (index === 0) {
+          tabPane.classList.add('show', 'active');
+          tabLink.classList.add('active');
+        }
+
+        const scheduleDiv = document.createElement('div');
+        scheduleDiv.className = 'my-4';
+
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        days.forEach((day) => {
+          const daySchedule = batch.schedule.filter((entry) => entry.week === day);
+
+          if (daySchedule.length > 0) {
+            const dayHeader = document.createElement('h5');
+            dayHeader.innerText = `${day}:`;
+            scheduleDiv.appendChild(dayHeader);
+
+            daySchedule.forEach((entry) => {
+              const timeDetails = document.createElement('p');
+              timeDetails.innerText = `${entry.time} : ${entry.details}`;
+              scheduleDiv.appendChild(timeDetails);
+            });
+            scheduleDiv.appendChild(document.createElement('hr'));
+          }
+        });
+
+        const exportButton = document.createElement('button');
+        exportButton.innerText = 'Export to .ics (Google Calander importable)';
+        exportButton.className = 'btn btn-primary mt-3';
+        exportButton.onclick = function () {
+          const icsContent = generateICSContent(batch);
+          // console.log(icsContent);
+          const blob = new Blob([icsContent], { type: 'text/plain;charset=utf-8' });
+          const filename = `schedule_${batch.name}.ics`;
+          saveAs(blob, filename);
+        };
+
+        scheduleDiv.appendChild(exportButton);
+        tabPane.appendChild(scheduleDiv);
+        timetableTabs.appendChild(tabLink);
+        timetableContent.appendChild(tabPane);
+      });
+    }
+
+    // Fetch the data and generate tabs and schedule
+    fetchData()
+      .then((data) => generateTabsAndSchedule(data))
+      .then(() => {
+        // Initialize Bootstrap tabs after generating content
+        $('#timetable-tabs a').on('click', function (e) {
+          e.preventDefault();
+          $(this).tab('show');
+        });
+      })
+      .catch((error) => console.error('Error:', error));
+  </script>
+</body>
+</html>
