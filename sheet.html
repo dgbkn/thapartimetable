@@ -118,6 +118,7 @@
 
       batchSelect.addEventListener('change', function () {
         const selectedBatchIndex = parseInt(this.value);
+            saveSelectedBatchIndex(selectedBatchIndex);
           updateContent(selectedBatchIndex, data);
       });
     }
@@ -125,10 +126,29 @@
     // Fetch the data and generate select options
     fetchData()
       .then((data) => {
-        generateSelectOptions(data);
-        updateContent(0, data); // Initialize with the first batch's schedule
+        // generateSelectOptions(data);
+        // updateContent(0, data); // Initialize with the first batch's schedule
+        
+      generateSelectOptions(data);
+      const selectedBatchIndex = getSelectedBatchIndex();
+      updateContent(selectedBatchIndex, data);
+      document.getElementById('batchSelect').value = selectedBatchIndex; 
+        
       })
       .catch((error) => console.error('Error:', error));
+
+       // Function to save selected batch index to localStorage
+    function saveSelectedBatchIndex(index) {
+      localStorage.setItem('selectedBatchIndex', index);
+    }
+  
+    // Function to retrieve selected batch index from localStorage
+    function getSelectedBatchIndex() {
+      const index = localStorage.getItem('selectedBatchIndex');
+      return index !== null ? parseInt(index) : 0; // Default to 0 if not found
+    }
+  
+    
   </script>
 </body>
 </html>
