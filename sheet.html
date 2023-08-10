@@ -21,6 +21,11 @@
     <select class="form-select" id="batchSelect">
     </select>
 
+    <div class="form-check mt-2">
+      <input class="form-check-input" type="checkbox" id="colorCodesCheckbox" checked>
+      <label class="form-check-label" for="colorCodesCheckbox">Show Color Codes</label>
+    </div>
+
     <div class="container">
       <div class="row">
         <div class="col">
@@ -38,6 +43,16 @@
 
     <div class="tab-content" id="timetable-content">
     </div>
+    
+        <div class="mt-3 fw-semibold" id="legend">
+      <h5>Legend:</h5>
+      <ul>
+        <li class="p-2 bg-danger text-white">Practical Lab (Red)</li>
+        <li class="p-2 bg-primary text-white">Tutorial (Blue)</li>
+        <li class="p-2 bg-success text-white">Lecture (Green)</li>
+      </ul>
+    </div>
+    
   </div>
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -60,6 +75,13 @@
 
     // Function to generate schedule for a batch
     function generateBatchSchedule(batch) {
+    const sessionColors = {
+      Practical: 'bg-danger',  
+      Tutorial: 'bg-primary',    
+      Lecture: 'bg-success',      
+      Elective: 'bg-info'       
+    };
+  
       const scheduleDiv = document.createElement('div');
       scheduleDiv.className = 'my-4';
 
@@ -75,7 +97,15 @@
           daySchedule.forEach((entry) => {
             const timeDetails = document.createElement('p');
             timeDetails.innerText = `${entry.time} : ${entry.details}`;
+            const sessionType = entry.details.match(/\b(Lecture|Practical|Tutorial|Elective)\b/g);
+            timeDetails.classList.add(sessionColors[sessionType]); 
+            timeDetails.classList.add("text-white"); 
+            timeDetails.classList.add("py-1"); 
+            timeDetails.classList.add("fw-semibold"); 
+            timeDetails.classList.add("px-2");
+            
             scheduleDiv.appendChild(timeDetails);
+
           });
           scheduleDiv.appendChild(document.createElement('hr'));
         }
@@ -148,6 +178,36 @@
       return index !== null ? parseInt(index) : 0; // Default to 0 if not found
     }
   
+
+  function toggleColorCodes(shouldShow) {
+    const scheduleItems = document.querySelectorAll('.my-4 p');
+    scheduleItems.forEach((item) => {
+      if (shouldShow) {
+        item.classList.remove('bg-white');
+        item.classList.add('text-white');
+        item.classList.add('px-2');
+        item.classList.add('fw-semibold');
+        item.classList.add('py-1');
+
+      } else {
+        item.classList.add('bg-white');
+        item.classList.remove('text-white');
+        item.classList.remove('px-2');
+        item.classList.remove('py-1');
+        item.classList.remove('fw-semibold');
+
+
+      }
+    });
+  }
+  
+  // Initialize color codes visibility based on checkbox state
+  const colorCodesCheckbox = document.getElementById('colorCodesCheckbox');
+  colorCodesCheckbox.addEventListener('change', function () {
+    toggleColorCodes(this.checked);
+  });
+  
+
     
   </script>
 </body>
