@@ -9,8 +9,8 @@ services:
       - "5657:5657"
     volumes:
       - .:/var/www/html
-    depends_on:
-      - mysql
+    # depends_on:
+    #   - mysql
     # environment:
     #   - MYSQL_HOST=mysql
     #   - MYSQL_DATABASE=your_database_name
