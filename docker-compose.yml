@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  php-apache:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5657:5657"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - mysql
+    # environment:
+    #   - MYSQL_HOST=mysql
+    #   - MYSQL_DATABASE=your_database_name
+    #   - MYSQL_USER=your_database_user
+    #   - MYSQL_PASSWORD=your_database_password
+
+  # mysql:
+  #   image: mysql:5.7
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: your_mysql_root_password
+  #     MYSQL_DATABASE: your_database_name
+  #     MYSQL_USER: your_database_user
+  #     MYSQL_PASSWORD: your_database_password
